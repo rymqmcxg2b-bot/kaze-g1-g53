@@ -1,8 +1,8 @@
-# 架構與資料流：最後才看清楚的核心問題
+# Architecture and Data Flow: The Core Problem I Understood Late
 
-kaZe 最重要的架構教訓不是某個 spread 參數，而是：**策略、風控與 execution 必須讀同一份、帶 freshness 與 provenance 的 live state。**
+The most important architectural lesson from kaZe was not a spread parameter. It was this: **strategy, risk controls, and execution must operate on one coherent live-state snapshot with explicit freshness and provenance.**
 
-## 理想資料流
+## Intended Data Flow
 
 ```text
 Market stream ───────┐
@@ -18,7 +18,7 @@ REST reconciliation ─────────────┤                  
                                  └<── ACK / fill / reject┘
 ```
 
-每一個 decision 應該綁定一個不可混淆的 snapshot：
+Every decision should bind to an unambiguous snapshot:
 
 ```text
 S(t) = {
@@ -30,15 +30,15 @@ S(t) = {
 }
 ```
 
-策略只輸出 intent：
+The strategy produces only an intent:
 
 ```text
 A(t) = policy(S(t))
 ```
 
-`A(t)` 不是成交，也不能直接修改 position。
+`A(t)` is not a fill and must not directly mutate the recorded position.
 
-## 歷史上容易出現的鬆散架構
+## The Loosely Coupled Pattern That Caused Trouble
 
 ```text
 Market WebSocket ──> fast strategy loop
@@ -48,26 +48,26 @@ Account REST ──────> slower cache ──> risk module
 Local order table ─> execution assumptions
 ```
 
-若三條路徑的時間不同，可能形成：
+If those paths represent different moments, a loop like this can emerge:
 
-1. Strategy 看到 position = 0，決定掛 bid。
-2. Risk 稍後讀到 position != 0，立刻 cancel。
-3. 下一個 strategy tick 又讀到舊 cache，再次 quote。
-4. 系統進入 `QUOTE → CANCEL → QUOTE → CANCEL`。
+1. The strategy sees position = 0 and decides to place a bid.
+2. The risk module later sees position != 0 and immediately cancels.
+3. The next strategy tick reads the stale cache and quotes again.
+4. The system enters `QUOTE → CANCEL → QUOTE → CANCEL`.
 
-表面像是 cancel threshold 太敏感，實際上是不同模組活在不同時間點。
+The symptom looks like an overly sensitive cancel threshold. The underlying problem is that different modules are acting on different versions of the world.
 
-## Authoritative owner
+## Source of Truth by State Type
 
-| 狀態 | 即時主來源 | 次要來源 | 不可接受的做法 |
+| State | Low-latency primary source | Reconciliation source | Unacceptable shortcut |
 |---|---|---|---|
-| BBO / L2 / trades | market stream | bounded public snapshot | 讓 ping 或另一頻道掩蓋 stale book |
-| Position / balance | account stream | periodic authenticated REST reconciliation | 送出 buy intent 後直接 `position += qty` |
-| Open orders | order/account stream | exchange REST reconciliation | 只信 local `submitted` row |
-| Order lifecycle | exchange ACK/fill/cancel/reject | reconciliation result | 把 `sent` 當成 `resting` |
-| PnL / costs | decision-linked fills、fees、funding、exit | independently reconstructed ledger | 用 public trade 或 equity delta 代替策略歸因 |
+| BBO / L2 / trades | Market stream, subject to sequence, gap, and freshness checks | Bounded public snapshot | Allowing ping traffic or another channel to hide a stale book |
+| Position / balance | Account stream, subject to the same checks | Periodic authenticated REST snapshot | Running `position += qty` when a buy intent is merely submitted |
+| Open orders | Order/account stream | Exchange REST snapshot | Trusting a local `submitted` row by itself |
+| Order lifecycle | Exchange ACK/fill/cancel/reject events | Explicit reconciliation result | Treating `sent` as `resting` |
+| PnL / costs | Decision-linked fills, fees, funding, and exits | Independently reconstructed ledger | Substituting a public trade or an equity delta for strategy attribution |
 
-## 訂單狀態不是布林值
+## Order State Is Not Boolean
 
 ```text
 INTENT
@@ -84,24 +84,24 @@ RESTING ───────> CANCEL_PENDING ───────> CANCELED
   └──> REJECTED / UNKNOWN → RECONCILE
 ```
 
-每個 transition 都需要 exchange evidence。Timeout 只能把結果標成 unknown，不能自行判定失敗或重試 signed write。
+Every transition requires exchange evidence. A timeout makes the result unknown; it does not prove failure and does not authorize a blind retry of a signed write.
 
-## WebSocket 與 REST 的角色
+## Roles of WebSocket and REST
 
-- WebSocket / account stream：低延遲 live truth。
-- REST：啟動、週期性與異常時的 reconciliation。
-- Strategy：只讀一個一致 snapshot，不直接向多個 client 拉狀態。
-- Execution：提交 intent，等待 ACK/fill，將事件回灌 live state。
+- WebSocket and account streams are low-latency primary event feeds, subject to sequence, gap, and freshness checks.
+- REST supplies startup, periodic, and exception-driven reconciliation.
+- Strategy reads one coherent snapshot instead of independently querying multiple clients.
+- Execution submits an intent, waits for ACK, fill, cancel, or rejection evidence, and feeds those events back into live state.
 
-REST 不能在每個 decision tick 阻塞策略，但 WebSocket 也不能被假設永遠完整；兩者需要明確的 freshness、sequence/gap 與 conflict policy。
+REST should not block every decision tick, but a WebSocket must not be assumed to be permanently complete. Both paths require explicit freshness, sequence/gap, and conflict policies.
 
-## 暫停前仍未完成的核心
+## What Was Still Missing When the Project Paused
 
-kaZe 建立過許多局部 reconciliation 與 fail-closed gates，但沒有持續做到下面四件事同時成立：
+kaZe built many local reconciliation mechanisms and fail-closed gates, but it did not continuously establish all four of these properties at once:
 
-1. Account、orders、fills 與 market state 有唯一 snapshot identity。
-2. 每個 decision 都能追到完整 action complement 與 terminal outcome。
-3. Live、shadow 與 replay 真正共享同一個 verified transition path。
-4. 任何策略結論都能從 after-cost、capital-time、不可刪除的完整 population 重算。
+1. Account, order, fill, and market states share one snapshot identity.
+2. Every decision can be traced to the complete action set—including no-action, filtered, and censored alternatives—and a terminal or explicitly censored outcome.
+3. Live, shadow, and replay use the same verified transition path.
+4. Every strategy conclusion can be recomputed from a complete, immutable population with after-cost and capital-time accounting.
 
-本 repo 的 `src/kaze_archive/live_state.py` 是對這個教訓的最小、不可交易示例。
+The file `src/kaze_archive/live_state.py` is a minimal, non-trading illustration of this lesson.

@@ -1,78 +1,78 @@
-# 失敗與學習
+# Failures and Lessons
 
-這不是事故清單的完整原始副本，而是把重複出現的問題整理成可以被別人重用的模式。
+This is not a verbatim archive of every incident. It distills recurring problems into patterns that may be useful to someone else.
 
-## 1. 把工程進度誤認成經濟進度
+## 1. Mistaking Engineering Progress for Economic Progress
 
-通過單元測試、降低延遲、成功部署、service active、甚至真的有 fills，都不能單獨證明策略有正期望。kaZe 很長一段時間把「更多綠燈」感覺成「更靠近盈利」，但缺少的是預先固定、完整成本後的 untouched outcome population。
+Passing unit tests, reducing latency, completing a deployment, seeing an active service, or even recording real fills cannot by themselves establish positive expectancy. For too long, kaZe treated “more green checks” as if they meant “closer to profitability.” What was missing was a precommitted, complete population of untouched, after-cost outcomes.
 
-現在會怎麼做：先寫明研究問題、population、成本、censoring、promotion rule，再寫執行器。
+What I would do now: define the research question, population, costs, censoring, and promotion rule before writing the execution engine.
 
-## 2. 成本吃掉短週期訊號
+## 2. Costs Overwhelming a Short-Horizon Signal
 
-G51 顯示一個很直接的事實：hot path 可以很快，但預測訊號若只有很小的 bps，而 round-trip fee、spread、slippage 與 exit cost 明顯更大，延遲優化無法把負經濟性變成正經濟性。
+The observed G51 evidence made this especially clear. A hot path can be fast, but if the measured signal is tiny while round-trip fees, spread, slippage, and exit costs are materially larger, latency optimization cannot turn negative economics into positive economics.
 
-現在會怎麼做：任何模型比較一律以 net EV / attempted action 與 net EV / capital-time 評估，且在訓練前固定成本契約。
+What I would do now: compare models only on net EV per attempted action and net EV per unit of capital-time, with the cost contract frozen before training.
 
-## 3. Public trade 被誤用成 execution evidence 的誘惑
+## 3. The Temptation to Treat Public Trades as Execution Evidence
 
-看到市場在 quote price 成交，不代表 kaZe 的單排到隊首、仍在簿上、沒有被 cancel，也不代表成交量屬於自己。
+Seeing the market trade at a quoted price does not prove that kaZe’s order reached the front of the queue, was still resting, escaped cancellation, or received any of that volume.
 
-現在會怎麼做：public trade 只能更新 queue model 或 hypothetical label；actual fill 必須來自帳戶/訂單事件，並連回自己的 order identity。
+What I would do now: allow public trades to update a queue model or a hypothetical label only. An actual fill must come from an account or order event and link back to kaZe’s own order identity.
 
-## 4. Cancel-first lifecycle 製造零單空窗
+## 4. Cancel-First Maintenance Creating Zero-Order Gaps
 
-G20 的審計顯示 quote 常被週期性撤掉，resting tenure 被丟失；同步網路與 reconciliation 又吃掉顯著時間。策略雖頻繁產生兩側候選，市場上實際兩側同時存在的時間少很多。
+The preserved G20 audit indicates that quotes were repeatedly removed, losing resting tenure, while synchronous networking and reconciliation consumed substantial time. The strategy often produced two-sided candidates, but both sides were simultaneously present in the market for far less time than the decision counts implied.
 
-現在會怎麼做：把 time-weighted quote availability、queue tenure、cancel reason、replacement gap 與 request budget 變成一等指標。
+What I would do now: make time-weighted quote availability, queue tenure, cancel reason, replacement gap, and request budget first-class metrics.
 
-## 5. 多份「真相」讓策略和風控互相打架
+## 5. Multiple “Truths” Making Strategy and Risk Fight Each Other
 
-Market、account、orders、local ledger 更新頻率不同。只要 position 或 open orders 在某個模組落後，就可能發生 quote/cancel 抖動、錯誤 block，或有 inventory 卻沒有可管理它的 orders。
+Market data, account data, orders, and the local ledger updated on different schedules. When position or open-order state lagged in one module, the system could oscillate between quoting and canceling, block valid actions, or leave inventory without resting orders able to manage it.
 
-現在會怎麼做：單一 authoritative live state；每個 snapshot 帶 timestamp、source、sequence、freshness、reconciliation version。
+What I would do now: maintain one authoritative live state. Every snapshot would carry its timestamp, source, sequence, freshness, and reconciliation version.
 
-## 6. `sent`、`accepted`、`resting`、`filled` 被混成一件事
+## 6. Collapsing `sent`, `accepted`, `resting`, and `filled` into One Event
 
-在分散式系統裡，timeout 後的結果是 unknown，不是 failed。自動重試 signed write 可能產生重複訂單；先預測 position 則會讓 local state 漂移。
+In a distributed system, a timeout produces an unknown outcome, not a proven failure. Blindly retrying a signed write can create a duplicate order; updating local position when an order is merely submitted rather than filled creates state drift.
 
-現在會怎麼做：狀態機只接受有證據的 transition；unknown 先 reconciliation，不用猜測補狀態。
+What I would do now: permit only evidence-backed state transitions. Unknown outcomes go through reconciliation rather than guessing or synthesizing state.
 
-## 7. Recovery 成本隨歷史無上限增長
+## 7. Recovery Work Growing Without a Bound
 
-完整掃描 SQLite ledger、一次把資料載進記憶體，或啟動時做過多遠端查詢，會讓小 instance 卡死、timeout 或和策略競爭 request budget。
+Scanning an entire SQLite ledger, loading all history into memory, or performing too many remote queries at startup can stall a small instance, trigger timeouts, or compete with the strategy for request budget.
 
-現在會怎麼做：checkpoint、reverse/streaming scan、明確 work bound、獨立 health budget，並測試長歷史與空歷史。
+What I would do now: use checkpoints, reverse or streaming scans, explicit work limits, and an independent health-check budget. Test both long-history and empty-history cases.
 
-## 8. Fail-closed 不是免費的
+## 8. Fail-Closed Behavior Is Not Free
 
-Fail-closed 適合未知 credentials、stale market、unknown position 等情境；但如果遇到延遲就撤掉全部 orders，又讓有 inventory 的系統長時間無法報價，防護本身可能增加暴露。
+Fail-closed behavior prevented actions when credentials, market freshness, or position state were uncertain. Some stop paths, however, also removed inventory-managing orders. The lesson is not to disable safety. It is that exposure-increasing actions and exposure-managing actions need separate, explicit, and tested policies.
 
-現在會怎麼做：區分「不可增加風險」與「不可管理既有風險」。風險 gate 可以限制 action set，但不應默默改寫已測策略，再沿用原本的績效宣稱。
+What I would do now: let a risk gate restrict the action set without silently substituting a different trading policy and continuing to claim the original strategy’s evidence.
 
-## 9. Replay integrity 通過，仍可能沒有可用 label
+## 9. Replay Integrity Passing Without Usable Labels
 
-G53 strict replay 能驗證 hashes、references、causal clocks 與 no-write boundary，卻只有很少 activation 有完整市場後續，且沒有 actual outcomes。資料完整性成功，不等於研究問題可回答。
+G53 strict replay could verify hashes, references, causal clocks, and a no-write boundary while only a few activations had complete market follow-through and none had linked actual execution outcomes. Data integrity can succeed while the research question remains unanswerable.
 
-現在會怎麼做：同時追蹤 integrity、coverage、identifiability、sample size 與 economic labels；任何一項不足都明確回傳 unavailable。
+What I would do now: track integrity, coverage, identifiability, sample size, and economic labels separately. If any required dimension is missing, return `UNAVAILABLE` explicitly.
 
-## 10. Vibe coding 造成版本與意圖漂移
+## 10. AI-Assisted Development Causing Version and Intent Drift
 
-快速迭代容易讓每次對話都新增參數、gate、release 或「暫時修正」。當模型、prompt 與上下文都會變，最後很難說哪一份策略被測過、哪一份正在跑。
+Fast iteration made it easy for each conversation to add a parameter, gate, release, or “temporary” correction. When models, prompts, and context all change, it becomes difficult to identify which policy was tested and which one is running.
 
-現在會怎麼做：
+What I would do now:
 
-- 策略 identity 由 code、features、labels、costs、risk limits、residual-position policy 與 execution semantics 的 hashes 共同決定。
-- 任何一項變更就是新 candidate。
-- 研究、部署與 owner authorization 分離。
-- AI 可以提案與寫程式，不能自己擴張任務或更改已授權策略。
+- Define strategy identity with hashes over code, features, labels, costs, risk limits, residual-position policy, and execution semantics.
+- Treat a change to any one of them as a new candidate.
+- Separate research status, deployment status, and owner authorization.
+- Allow AI to propose and implement changes only within an explicit scope; it must not alter an authorized policy without a separate human decision.
 
-## 11. 手動交易會破壞簡單 equity-delta 歸因
+## 11. Manual Trading Breaking Simple Equity-Delta Attribution
 
-帳戶資產變化可能同時包含策略交易、手動交易、funding、fees、轉帳與未實現損益。只看期初期末 asset，不能回答某一代策略賺了多少。
+An account-value change can simultaneously contain strategy trading, manual trading, funding, fees, transfers, and unrealized PnL. Beginning-to-end equity alone cannot determine how much a particular project iteration made or lost.
 
-現在會怎麼做：用 decision/order/fill 級 ledger 做策略歸因；外部持倉與人工行為明確標記為 inherited/external state。
+What I would do now: attribute performance through a decision/order/fill-level ledger and mark externally introduced positions or manual actions as inherited or external state.
 
-## 12. 「暫停」也是研究成果
+## 12. Knowing When to Pause Is Part of the Research Process
 
-G53 的結論不是「再調一個 threshold」。在沒有可信 account/order truth、完整 outcomes 與足夠基礎時，繼續加程式會增加不確定性。暫停讓這條路徑保持誠實，也留下未來能從更好問題重新開始的可能。
+The responsible conclusion at G53 was not “tune one more threshold.” Without trustworthy account/order state, complete outcomes, and stronger foundations, adding code would have added uncertainty. Pausing preserves an honest boundary and leaves open the possibility of returning later with better questions.

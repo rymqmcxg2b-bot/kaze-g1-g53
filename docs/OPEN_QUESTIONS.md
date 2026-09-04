@@ -1,34 +1,34 @@
-# 我還想請教的問題
+# Questions I Still Want to Understand
 
-暫停不是把問題丟掉。以下是我現在還不會、但很想真正弄懂的事。如果你熟悉其中任何一題，歡迎開 Issue、推薦材料，或把問題改寫得更精確。
+Pausing the project does not mean abandoning its questions. These are things I still do not know and genuinely want to understand. If you know one of these areas, please open an Issue, recommend a resource, or help me state the question more precisely.
 
-## Market microstructure
+## Market Microstructure
 
-1. 在沒有 venue queue-position feed 的情況下，maker fill probability 最誠實的可識別範圍是什麼？
-2. 如何把 queue depletion、cancel/reinsert tenure 與 adverse selection 放進同一個 survival / competing-risk model？
-3. 用 public trades 做 hypothetical maker labels 時，哪些假設最常讓結果過度樂觀？
+1. Without a venue-provided queue-position feed, what bounds on maker fill probability are actually identifiable?
+2. How should queue depletion, cancel/reinsert tenure, and adverse selection be combined in a survival or competing-risks model?
+3. When public trades are used to create hypothetical maker labels, which assumptions most often make results too optimistic?
 
-## 實驗與統計
+## Experiments and Statistics
 
-1. Attempted action 包含大量 no-trade、no-fill 與 right-censoring 時，after-cost EV 的 lower confidence bound 應怎麼設計？
-2. 每兩週再校調一次時，如何避免 repeated testing 把偶然結果變成「正期望」？
-3. Regime 很少、樣本相依且 non-stationary 時，什麼樣的 blocked bootstrap 或 sequential test 比較合理？
+1. When attempted actions contain many no-trades, no-fills, and right-censored outcomes, how should a lower confidence bound on after-cost EV be constructed?
+2. If a policy is recalibrated every two weeks, how can repeated testing be controlled so that chance findings are not relabeled as “positive expectancy”?
+3. With few regimes, dependent samples, and non-stationarity, which block-bootstrap or sequential-testing designs are defensible?
 
-## Execution 與分散式狀態
+## Execution and Distributed State
 
-1. Account stream 和 REST snapshot 衝突時，live state 應採用什麼版本/事件規則，才能兼顧低延遲與可證明性？
-2. Signed request timeout 後，如何設計 no-blind-retry 的 order reconciliation state machine？
-3. 有既有 inventory、但 account/order state freshness 不足時，如何區分「不增加風險」與「繼續管理既有風險」？
+1. When an account stream conflicts with a REST snapshot, which version and event rules should govern live state while preserving both low latency and auditability?
+2. After a signed request times out, how should a no-blind-retry order-reconciliation state machine work?
+3. When inventory already exists but account/order freshness is inadequate, how should a system distinguish “do not increase risk” from “continue managing existing risk”?
 
-## RL / ML
+## RL and ML
 
-1. 如何讓 RL 只負責 execution policy，而保留可解釋、經過審查的 quote/risk theory？
-2. Action space 應只包含 join/improve/widen/cancel/hold，還是連 size 與 inventory skew 都交給模型？
-3. 在 fill outcome 部分可觀察、counterfactual 不可觀察的情況下，什麼 offline-RL evaluation 才不會假裝知道未執行 action 的 reward？
+1. How can RL be limited to execution decisions while preserving interpretable, reviewed quote-formation and risk logic?
+2. Should the action space contain only join/improve/widen/cancel/hold, or should size and inventory skew also be delegated to the model?
+3. When fill outcomes are partially observed and counterfactuals are not, which offline-RL evaluation methods avoid pretending to know the reward of an unexecuted action?
 
-## 有限資源
+## Constrained Resources
 
-1. 在小型 instance 上，怎麼分配 market ingest、account reconciliation、strategy loop、audit ledger 與 health checks 的 CPU/IO budget？
-2. 哪些資料一定要在線保留，哪些可以 append-only rotation 到冷儲存，仍不破壞可重現性？
+1. On a small instance, how should CPU and I/O budgets be divided among market ingestion, account reconciliation, the strategy loop, the audit ledger, and health checks?
+2. Which data must remain online, and which can be rotated append-only into cold storage without breaking reproducibility?
 
-我特別珍惜能把「問題其實問錯了」講清楚的回饋。答案不需要替 kaZe 辯護；推翻它也很有價值。
+I especially value feedback showing that the question itself was wrong. Feedback does not need to defend kaZe; demonstrating that an assumption is false is equally valuable.

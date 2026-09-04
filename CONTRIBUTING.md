@@ -1,25 +1,25 @@
-# Contributing / 一起研究
+# Contributing: Learn With Me
 
-謝謝你願意看一個沒有成功證明盈利的專案。這個 repo 最需要的不是替它宣傳，而是幫忙把問題問得更好。
+Thank you for spending time with a project that did not establish profitability. What this repository needs most is not promotion, but help asking better questions.
 
-## 很歡迎的貢獻
+## Contributions I Would Value
 
-- 指出時間線、因果推論或 market-microstructure 理解中的錯誤。
-- 用 beginner-friendly 的方式解釋 maker queue、adverse selection、inventory risk 或 execution uncertainty。
-- 改善 authoritative live-state 與 order lifecycle 的教育性範例。
-- 提議能避免 leakage、selection bias 與 repeated-tuning bias 的實驗設計。
-- 推薦書、paper、課程、開源專案或小練習。
-- 分享你自己做系統時失敗過、後來才理解的事。
+- Point out mistakes in the timeline, causal reasoning, or market-microstructure interpretation.
+- Explain maker queues, adverse selection, inventory risk, or execution uncertainty in a beginner-friendly way.
+- Improve the educational authoritative live-state and order-lifecycle examples.
+- Propose experimental designs that reduce leakage, selection bias, and repeated-tuning bias.
+- Recommend books, papers, courses, open-source projects, or small exercises.
+- Share something you misunderstood while building a system and did not recognize until something went wrong.
 
-## 開 Issue 時可以這樣寫
+## A Useful Issue Structure
 
-1. 你看到哪一個假設或敘述有問題？
-2. 問題會如何影響策略、執行或證據結論？
-3. 有沒有一個最小反例、paper、測試或替代設計？
-4. 你的結論是已證明、合理推測，還是值得測試的假說？
+1. Which claim, assumption, or design do you think is wrong?
+2. How would it affect the strategy, execution, or evidence-based conclusion?
+3. Can you provide a minimal counterexample, paper, test, or alternative design?
+4. Is your conclusion supported by evidence, a strong inference, or a hypothesis worth testing?
 
-直接批評沒有關係，但請針對想法與證據，不要攻擊人。這裡歡迎初學者，也歡迎專業人士；不知道可以說不知道。
+Direct criticism is welcome, but please address ideas and evidence rather than people. Beginners and experts are both welcome, and it is always acceptable to say, “I do not know.”
 
-## 安全界線
+## Safety Boundary
 
-不要提交 credentials、wallet/account identifiers、真實逐筆交易、private endpoints 或任何能操作資金的程式設定。發現疑似秘密請依 [SECURITY.md](SECURITY.md) 處理，不要貼進公開 Issue。
+Do not submit credentials, wallet or account identifiers, real order-level trading data, private endpoints, or any configuration that can control funds. If you notice a possible secret, follow [SECURITY.md](SECURITY.md) and do not paste its value into a public issue.

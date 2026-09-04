@@ -1,4 +1,4 @@
-name: Research question / 研究問題
+name: Research question
 description: Point out a mistake, teach a concept, or propose a falsifiable experiment.
 title: "[Research] "
 labels: ["research-question"]
@@ -6,33 +6,33 @@ body:
   - type: markdown
     attributes:
       value: |
-        謝謝你願意一起研究。請勿貼上任何 credential、帳戶或真實逐筆交易資料。
+        Thank you for helping me investigate this. Do not include credentials, account identifiers, private endpoints, or real account-level trading data.
   - type: textarea
     id: claim
     attributes:
       label: Which claim or assumption?
-      description: 哪個敘述、假設或設計需要修正？
+      description: Which claim, assumption, or design choice should be reconsidered?
     validations:
       required: true
   - type: textarea
     id: impact
     attributes:
       label: Why does it matter?
-      description: 它會如何影響策略、執行或證據結論？
+      description: How could it affect the strategy, execution, or evidence-based conclusion?
     validations:
       required: true
   - type: textarea
     id: evidence
     attributes:
-      label: Evidence or minimal experiment
-      description: 歡迎附 paper、反例、測試或可被推翻的實驗。
+      label: Evidence or minimal reproducible experiment
+      description: A paper, counterexample, test, or falsifiable experiment is welcome.
   - type: dropdown
     id: confidence
     attributes:
       label: Confidence
       options:
-        - Proven / 已證明
-        - Strong inference / 強推論
-        - Hypothesis to test / 待測假說
+        - Demonstrated by evidence
+        - Strong but incomplete inference
+        - Hypothesis to test
     validations:
       required: true
