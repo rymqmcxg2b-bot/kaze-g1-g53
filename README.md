@@ -8,9 +8,11 @@
 
 > **Formal descriptive research title:** *kaZe G1–G53: An Exploratory Systems Study of Inventory-Aware Maker Quoting, Execution-State Reconciliation, and After-Cost Evaluation in a BTC Perpetual Limit-Order Book*
 
+> **Public-example corrections:** The review of revision `7c6f248` found three bugs in the rewritten educational state example and one contradiction in its architecture documentation. [Errata and corrections](docs/ERRATA.md) records the affected lines, old behavior, corrected rules, and regression checks. These findings concern the public example; they do not establish that the private historical runtime had the same bugs.
+
 kaZe began as a “vibe coding” project: an AI-assisted learning experiment in market microstructure, automated trading, data integrity, and live execution. Its project labels eventually ran from G1 to G53. What remains is not a successful equity curve, but a record of gradually learning to distinguish “the program runs,” “an order can be submitted,” and “the strategy has a defensible edge.”
 
-[Theoretical foundations](docs/THEORETICAL_FOUNDATIONS.md) · [The complete G1–G53 index](docs/JOURNEY_G1_G53.md) · [Architecture and data flow](docs/ARCHITECTURE.md) · [Failures and lessons](docs/FAILURES_AND_LESSONS.md) · [Evidence boundaries](docs/EVIDENCE_BOUNDARIES.md) · [Questions I still want to understand](docs/OPEN_QUESTIONS.md)
+[Errata and corrections](docs/ERRATA.md) · [Theoretical foundations](docs/THEORETICAL_FOUNDATIONS.md) · [The complete G1–G53 index](docs/JOURNEY_G1_G53.md) · [Architecture and data flow](docs/ARCHITECTURE.md) · [Failures and lessons](docs/FAILURES_AND_LESSONS.md) · [Evidence boundaries](docs/EVIDENCE_BOUNDARIES.md) · [Questions I still want to understand](docs/OPEN_QUESTIONS.md)
 
 ## Why I Am Publishing kaZe
 
@@ -106,6 +108,7 @@ Having code, tests, data, and live-trading records is not the same as having cre
 This is not a dump of the original production repository. It is a **de-identified public research archive rebuilt from an explicit allowlist**:
 
 - `docs/JOURNEY_G1_G53.md`: the focus, outcome, and documentation confidence of every project iteration.
+- `docs/ERRATA.md`: the public-example bugs and documentation contradiction, with baseline evidence, corrected behavior, and regression checks.
 - `docs/THEORETICAL_FOUNDATIONS.md`: the formal research name, theoretical lineage, historical quote equations, and limits of the classification.
 - `docs/ARCHITECTURE.md`: the authoritative live-state data flow I eventually understood was necessary.
 - `docs/FAILURES_AND_LESSONS.md`: recurring failure modes, causal relationships, and how I would approach them now.

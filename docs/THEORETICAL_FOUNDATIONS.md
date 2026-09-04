@@ -53,11 +53,24 @@ signal_score =
 The quote center then combined the signal with an inventory penalty:
 
 ```text
+inventory_ratio = clip(base_position / max(max_position_abs, 1e-12), -1, 1)
+
 signal_shift_bps = 1.5 * signal_score
 inventory_shift_bps = -8.0 * inventory_ratio * regime_inventory_multiplier
 reservation_shift_bps = signal_shift_bps + inventory_shift_bps
 reservation_price = mid * (1 + reservation_shift_bps / 10,000)
 ```
+
+`base_position` is signed inventory in base-asset units; `max_position_abs` is the absolute position limit in the same units. Thus `inventory_ratio` is dimensionless, positive for a long position and negative for a short position. Clipping limits the pricing penalty; it does not establish compliance with the position limit or replace the risk gate.
+
+The reviewed regime settings were:
+
+| Regime labels | Size multiplier | Spread multiplier | Inventory multiplier |
+|---|---|---|---|
+| `normal` / `allow` | 1.0 | 1.0 | 1.0 |
+| `watch` / `shrink` | 0.5 | 1.5 | 2.0 |
+
+Other regime labels blocked quoting in this configuration. The size multiplier participates in the broader sizing rules and is not an additional term in the reservation-price equation.
 
 Its half-spread used a floor plus regime, volatility, and signal-uncertainty terms:
 
@@ -102,6 +115,8 @@ INTENT → SUBMITTED
 ```
 
 This part of the project belongs as much to distributed systems as to quantitative finance: event-driven architecture, state machines, provenance, freshness, idempotency, append-only evidence, and reconciliation all change the realized economics of a maker strategy.
+
+The diagram is a conceptual selection of paths, not an exhaustive transition table. Intent creation, submission, and cancel requests are local facts; acceptance, resting status, fills, cancellation confirmation, and exchange rejection require exchange evidence. `UNKNOWN` records uncertainty and can also follow a cancellation timeout. A fill can race with cancellation, and a cancel rejection does not reject the original order. See [Architecture](ARCHITECTURE.md#order-state-is-not-boolean) for the evidence distinction and [DOC-001](ERRATA.md#doc-001--every-transition-requires-exchange-evidence) for the corrected earlier wording. The public example illustrates selected invariants and does not implement this entire lifecycle.
 
 ## 6. After-Cost Evaluation and Experimental Design
 

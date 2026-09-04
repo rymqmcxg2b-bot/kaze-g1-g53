@@ -68,11 +68,16 @@ class LiveStateTests(unittest.TestCase):
         self.assertEqual(len(self.state.snapshot(created_time_ns=170).open_orders), 0)
 
     def test_reconciliation_reports_both_state_mismatches(self) -> None:
-        self.state.record_intent(
-            intent_id="synthetic-3",
-            side=Side.SELL,
-            quantity=Decimal("0.05"),
-            created_time_ns=140,
+        # ERR-001: only venue-confirmed membership can disagree with venue open IDs.
+        self.state.ingest_order_event(
+            OrderEvent(
+                order_id="synthetic-3",
+                side=Side.SELL,
+                quantity=Decimal("0.05"),
+                filled_quantity=Decimal("0"),
+                status=OrderStatus.RESTING,
+                update_time_ns=140,
+            )
         )
         differences = self.state.reconciliation_differences(
             authoritative_position=Decimal("0.20"),

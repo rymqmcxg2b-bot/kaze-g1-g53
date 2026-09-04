@@ -36,7 +36,8 @@ def main() -> None:
     print("Synthetic, no-network demonstration")
     print(f"position before intent: {before.account.position}")
     print(f"position after intent:  {after.account.position}")
-    print(f"open local intents:     {len(after.open_orders)}")
+    print(f"pending local intents:  {len(after.pending_new)}")
+    print(f"confirmed open orders:  {len(after.open_orders)}")
     print("Position is unchanged until an authoritative account update arrives.")
 
 
