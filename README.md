@@ -1,12 +1,16 @@
 # kaZe: What I Learned from 53 Project Iterations of an Unproven Trading System
 
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+
 > **Status: PAUSED / RESEARCH ARCHIVE**
 >
 > kaZe did not establish positive after-cost expectancy. It is not a production trading system and should not be entrusted with capital. This public edition contains no credentials, account identifiers, cloud-resource identifiers, private trading data, or exchange-connected execution component.
 
+> **Formal descriptive research title:** *kaZe G1–G53: An Exploratory Systems Study of Inventory-Aware Maker Quoting, Execution-State Reconciliation, and After-Cost Evaluation in a BTC Perpetual Limit-Order Book*
+
 kaZe began as a “vibe coding” project: an AI-assisted learning experiment in market microstructure, automated trading, data integrity, and live execution. Its project labels eventually ran from G1 to G53. What remains is not a successful equity curve, but a record of gradually learning to distinguish “the program runs,” “an order can be submitted,” and “the strategy has a defensible edge.”
 
-[The complete G1–G53 index](docs/JOURNEY_G1_G53.md) · [Architecture and data flow](docs/ARCHITECTURE.md) · [Failures and lessons](docs/FAILURES_AND_LESSONS.md) · [Evidence boundaries](docs/EVIDENCE_BOUNDARIES.md) · [Questions I still want to understand](docs/OPEN_QUESTIONS.md)
+[Theoretical foundations](docs/THEORETICAL_FOUNDATIONS.md) · [The complete G1–G53 index](docs/JOURNEY_G1_G53.md) · [Architecture and data flow](docs/ARCHITECTURE.md) · [Failures and lessons](docs/FAILURES_AND_LESSONS.md) · [Evidence boundaries](docs/EVIDENCE_BOUNDARIES.md) · [Questions I still want to understand](docs/OPEN_QUESTIONS.md)
 
 ## Why I Am Publishing kaZe
 
@@ -40,6 +44,23 @@ Thank you for visiting kaZe. There is no promise of profit here—only the quest
 - Keeping a 24/7 runtime observable, recoverable, and reproducible on constrained hardware.
 
 These were goals the project explored incrementally. They were not all achieved.
+
+## Formal Research Framing
+
+**Strategy family:** Inventory-aware, signal-conditioned limit-order-book market making with event-driven feedback control.
+
+kaZe explored four connected bodies of theory and engineering:
+
+- **Inventory-based market making.** Quote prices and sizes responded to inventory, placing the design in the broad lineage of the Ho–Stoll dealer models, the Avellaneda–Stoikov stochastic-control formulation, and later inventory-constrained market-making work.
+- **Limit-order-book microstructure.** Quote decisions explored microprice, depth imbalance, trade-flow imbalance, spread, short-horizon volatility, maker fill uncertainty, and adverse selection.
+- **Event-driven feedback control and distributed state.** Decisions were intended to operate on a coherent snapshot of market, account, order, and execution state, followed by evidence-backed ACK, fill, cancel, reject, and reconciliation transitions.
+- **After-cost empirical evaluation.** A credible result would require decision-linked attempts, fills and no-fills, fees, slippage, funding, exits, inventory dwell time, and censored outcomes—not merely public trades or service activity.
+
+This classification describes kaZe’s intellectual lineage, not a claim that it implemented a canonical optimal-market-making model. Its quote engine was a rule-based engineering heuristic: it did not solve a Hamilton–Jacobi–Bellman equation, calibrate the canonical order-arrival model, or establish an optimality result. Partial observability is a useful lens for its stale, missing, and conflicting state, but kaZe did not formulate or solve a POMDP.
+
+ML and reinforcement learning remained possible future directions for a bounded execution layer. G53 did not select, train, or validate an RL or ML policy for live trading. G51 was a separate short-horizon taker experiment rather than the theoretical core of the maker system.
+
+See [Theoretical Foundations and Research Classification](docs/THEORETICAL_FOUNDATIONS.md) for the full mapping and the correctly qualified historical quote equations.
 
 ## The G1–G53 Project Map
 
@@ -85,6 +106,7 @@ Having code, tests, data, and live-trading records is not the same as having cre
 This is not a dump of the original production repository. It is a **de-identified public research archive rebuilt from an explicit allowlist**:
 
 - `docs/JOURNEY_G1_G53.md`: the focus, outcome, and documentation confidence of every project iteration.
+- `docs/THEORETICAL_FOUNDATIONS.md`: the formal research name, theoretical lineage, historical quote equations, and limits of the classification.
 - `docs/ARCHITECTURE.md`: the authoritative live-state data flow I eventually understood was necessary.
 - `docs/FAILURES_AND_LESSONS.md`: recurring failure modes, causal relationships, and how I would approach them now.
 - `docs/EVIDENCE_BOUNDARIES.md`: what the evidence supports and what it does not.
@@ -119,4 +141,4 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md). Kind but direct criticism is very
 
 ## License
 
-The entire repository, including its documentation, is released under the [MIT License](LICENSE).
+The entire repository, including its documentation, is released under the [Apache License 2.0](LICENSE).

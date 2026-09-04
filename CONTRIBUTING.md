@@ -23,3 +23,5 @@ Direct criticism is welcome, but please address ideas and evidence rather than p
 ## Safety Boundary
 
 Do not submit credentials, wallet or account identifiers, real order-level trading data, private endpoints, or any configuration that can control funds. If you notice a possible secret, follow [SECURITY.md](SECURITY.md) and do not paste its value into a public issue.
+
+Unless explicitly stated otherwise, any contribution intentionally submitted for inclusion in this repository is provided under the [Apache License 2.0](LICENSE), consistent with Section 5 of that license. By contributing, you confirm that you have the right to submit the work under those terms.
